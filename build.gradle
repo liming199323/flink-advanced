@@ -2,12 +2,28 @@ plugins {
     id 'java'
     id 'scala'
     id 'idea'
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
+
 }
+apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'io.github.gourd'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
+
+// 注意：我们不能使用 "compileOnly" 或者 "shadow" 配置，这会使我们无法在 IDE 中或通过使用 "gradle run" 命令运行代码。
+// 我们也不能从 shadowJar 中排除传递依赖（请查看 https://github.com/johnrengelman/shadow/issues/159)。
+// -> 显式定义我们想要包含在 "flinkShadowJar" 配置中的类库!
+configurations {
+    flinkShadowJar // dependencies which go into the shadowJar
+
+    // always exclude these (also from transitive dependencies) since they are provided by Flink
+//    flinkShadowJar.exclude group: 'org.apache.flink', module: 'force-shading'
+//    flinkShadowJar.exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    flinkShadowJar.exclude group: 'org.slf4j'
+    flinkShadowJar.exclude group: 'log4j'
+}
 
 repositories {
     mavenCentral()
@@ -22,6 +38,9 @@ dependencies {
     compile group: 'org.apache.flink', name: 'flink-table-api-scala_2.12', version: '1.9.1'
     compile group: 'org.apache.flink', name: 'flink-table-planner_2.12', version: '1.9.1'
 
+    // https://mvnrepository.com/artifact/org.apache.flink/flink-connector-kafka-0.9
+    compile group: 'org.apache.flink', name: 'flink-connector-kafka_2.12', version: '1.9.1'
+
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
     compile group: 'log4j', name: 'log4j', version: '1.2.17'
 
@@ -33,4 +52,8 @@ jar {
         attributes 'Built-By': System.getProperty('user.name'),
                 'Build-Jdk': System.getProperty('java.version')
     }
+}
+
+shadowJar {
+    configurations = [project.configurations.flinkShadowJar]
 }
