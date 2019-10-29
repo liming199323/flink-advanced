@@ -9,7 +9,7 @@
 >user 表示用户，role 表示角色。一个用户拥有多个角色。
 
 **表说明**
-platform,channel,region,server,dataUnix
+所有表默认包含字段`platform,channel,region,server,dataUnix`
 
 |表名|描述|字段|
 |---|---|---|
