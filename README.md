@@ -12,7 +12,7 @@
 ## 任务开发实例
 |包|说明|
 |---|---|
-|[data](./src/main/scala/io/gourd/flink/scala/data)                     |示例所需数据集封装|
+|[data](./src/main/scala/io/gourd/flink/scala/data)                     |示例所需数据集封装，[说明](./src/main/resources/data/README.MD)|
 |[batch](./src/main/scala/io/gourd/flink/scala/batch)                   |batch 任务|
 |[streaming](./src/main/scala/io/gourd/flink/scala/streaming)           |streaming 任务|
 |[table](./src/main/scala/io/gourd/flink/scala/table)                   |table-sql 任务|

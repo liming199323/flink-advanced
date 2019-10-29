@@ -1,9 +1,9 @@
 # 测试数据集
 
-# 目录 words
+# 目录 words 数据集说明
 模拟一片文章为.txt文件，对其中单词进行一些频次分析
 >参考 `io.gourd.flink.scala.data.Words`
-# 目录 game
+# 目录 game 数据集说明
 模拟游戏业务数据
 >参考 `io.gourd.flink.scala.data.Games`
 >user 表示用户，role 表示角色。一个用户拥有多个角色。
@@ -18,6 +18,7 @@
 |user-login|用户登录|platform,channel,region,server,uid,data_unix,status|
 
 **字段说明**
+
 |字段|说明|
 |---|---|
 |platform  |平台|
