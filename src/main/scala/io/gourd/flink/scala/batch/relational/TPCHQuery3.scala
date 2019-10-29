@@ -39,7 +39,7 @@ import org.apache.flink.api.scala._
   *      o_shippriority
   * FROM customer,
   *      orders,
-  *      lineitem
+  *      lineItem
   * WHERE
   *      c_mktsegment = '[SEGMENT]'
   *      AND c_custkey = o_custkey
@@ -61,7 +61,7 @@ import org.apache.flink.api.scala._
   *
   * Usage:
   * {{{
-  * TPCHQuery3 --lineitem <path> --customer <path> --orders <path> --output <path>
+  * TPCHQuery3 --lineItem <path> --customer <path> --orders <path> --output <path>
   * }}}
   *
   * This example shows how to use:
@@ -74,12 +74,12 @@ object TPCHQuery3 {
   def main(args: Array[String]) {
 
     val params: ParameterTool = ParameterTool.fromArgs(args)
-    if (!params.has("lineitem") && !params.has("customer") && !params.has("orders")) {
+    if (!params.has("lineItem") && !params.has("customer") && !params.has("orders")) {
       println("  This program expects data from the TPC-H benchmark as input data.")
       println("  Due to legal restrictions, we can not ship generated data.")
       println("  You can find the TPC-H data generator at http://www.tpc.org/tpch/.")
       println("  Usage: TPCHQuery3 " +
-        "--lineitem <path> --customer <path> --orders <path> [--output <path>]")
+        "--lineItem <path> --customer <path> --orders <path> [--output <path>]")
       return
     }
 
@@ -93,25 +93,25 @@ object TPCHQuery3 {
     val dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd")
     val date = dateFormat.parse("1995-03-12")
 
-    // read and filter lineitems by shipDate
-    val lineitems =
-      getLineitemDataSet(env, params.get("lineitem")).
-        filter(l => dateFormat.parse(l.shipDate).after(date))
+    // read and filter lineItems by shipDate
+    val lineItems = getLineItemDataSet(env, params.get("lineItem")).
+      filter(l => dateFormat.parse(l.shipDate).after(date))
+
     // read and filter customers by market segment
-    val customers =
-      getCustomerDataSet(env, params.get("customer")).
-        filter(c => c.mktSegment.equals("AUTOMOBILE"))
+    val customers = getCustomerDataSet(env, params.get("customer")).
+      filter(c => c.mktSegment.equals("AUTOMOBILE"))
+
     // read orders
     val orders = getOrdersDataSet(env, params.get("orders"))
 
     // filter orders by order date
     val items = orders.filter(o => dateFormat.parse(o.orderDate).before(date))
       // filter orders by joining with customers
-      .join(customers).where("custId").equalTo("custId").apply((o, c) => o)
-      // join with lineitems
-      .join(lineitems).where("orderId").equalTo("orderId")
+      .join(customers).where("custId").equalTo("custId").apply((o, _) => o)
+      // join with lineItems
+      .join(lineItems).where("orderId").equalTo("orderId")
       .apply((o, l) =>
-        new ShippedItem(o.orderId,
+        ShippedItem(o.orderId,
           l.extdPrice * (1.0 - l.discount),
           o.orderDate,
           o.shipPrio))
@@ -136,7 +136,7 @@ object TPCHQuery3 {
   //     USER DATA TYPES
   // *************************************************************************
 
-  case class Lineitem(orderId: Long, extdPrice: Double, discount: Double, shipDate: String)
+  case class lineItem(orderId: Long, extdPrice: Double, discount: Double, shipDate: String)
 
   case class Order(orderId: Long, custId: Long, orderDate: String, shipPrio: Long)
 
@@ -148,10 +148,10 @@ object TPCHQuery3 {
   //     UTIL METHODS
   // *************************************************************************
 
-  private def getLineitemDataSet(env: ExecutionEnvironment, lineitemPath: String):
-  DataSet[Lineitem] = {
-    env.readCsvFile[Lineitem](
-      lineitemPath,
+  private def getLineItemDataSet(env: ExecutionEnvironment, lineItemPath: String):
+  DataSet[lineItem] = {
+    env.readCsvFile[lineItem](
+      lineItemPath,
       fieldDelimiter = "|",
       includedFields = Array(0, 5, 6, 10))
   }

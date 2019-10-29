@@ -85,7 +85,7 @@ object TPCHQuery3Table {
     val env = ExecutionEnvironment.getExecutionEnvironment
     val tEnv = BatchTableEnvironment.create(env)
 
-    val lineitems = getLineitemDataSet(env)
+    val lineItems = getLineItemDataSet(env)
       .toTable(tEnv, 'id, 'extdPrice, 'discount, 'shipDate)
       .filter('shipDate.toDate > date)
 
@@ -101,7 +101,7 @@ object TPCHQuery3Table {
       orders.join(customers)
         .where('custId === 'id)
         .select('orderId, 'orderDate, 'shipPrio)
-        .join(lineitems)
+        .join(lineItems)
         .where('orderId === 'id)
         .select(
           'orderId,
@@ -125,7 +125,7 @@ object TPCHQuery3Table {
   //     USER DATA TYPES
   // *************************************************************************
 
-  case class Lineitem(id: Long, extdPrice: Double, discount: Double, shipDate: String)
+  case class LineItem(id: Long, extdPrice: Double, discount: Double, shipDate: String)
 
   case class Customer(id: Long, mktSegment: String)
 
@@ -135,14 +135,14 @@ object TPCHQuery3Table {
   //     UTIL METHODS
   // *************************************************************************
 
-  private var lineitemPath: String = _
+  private var lineItemPath: String = _
   private var customerPath: String = _
   private var ordersPath: String = _
   private var outputPath: String = _
 
   private def parseParameters(args: Array[String]): Boolean = {
     if (args.length == 4) {
-      lineitemPath = args(0)
+      lineItemPath = args(0)
       customerPath = args(1)
       ordersPath = args(2)
       outputPath = args(3)
@@ -157,9 +157,9 @@ object TPCHQuery3Table {
     }
   }
 
-  private def getLineitemDataSet(env: ExecutionEnvironment): DataSet[Lineitem] = {
-    env.readCsvFile[Lineitem](
-      lineitemPath,
+  private def getLineItemDataSet(env: ExecutionEnvironment): DataSet[LineItem] = {
+    env.readCsvFile[LineItem](
+      lineItemPath,
       fieldDelimiter = "|",
       includedFields = Array(0, 5, 6, 10))
   }

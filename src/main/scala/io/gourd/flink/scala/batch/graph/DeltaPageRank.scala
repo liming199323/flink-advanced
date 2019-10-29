@@ -73,8 +73,8 @@ object DeltaPageRank {
 
     val iteration = initialRanks.iterateDelta(initialDeltas, maxIterations, Array(0)) {
 
-      (solutionSet, workset) => {
-        val deltas = workset.join(adjacency).where(0).equalTo(0) {
+      (solutionSet, workSet) => {
+        val deltas = workSet.join(adjacency).where(0).equalTo(0) {
           (lastDeltas, adj, out: Collector[Page]) => {
             val targets = adj._2
             val deltaPerTarget = DAMPENING_FACTOR * lastDeltas._2 / targets.length

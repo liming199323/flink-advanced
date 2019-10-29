@@ -42,7 +42,7 @@ import org.apache.flink.api.scala._
   * FROM
   *        customer,
   *        orders,
-  *        lineitem,
+  *        lineItem,
   *        nation
   * WHERE
   *        c_custkey = o_custkey
@@ -68,7 +68,7 @@ import org.apache.flink.api.scala._
   *
   * Usage:
   * {{{
-  * TPCHQuery10 --customer <path> --orders <path> --lineitem <path> --nation <path> --output <path>
+  * TPCHQuery10 --customer <path> --orders <path> --lineItem <path> --nation <path> --output <path>
   * }}}
   *
   * This example shows how to use:
@@ -82,13 +82,13 @@ object TPCHQuery10 {
   def main(args: Array[String]) {
 
     val params: ParameterTool = ParameterTool.fromArgs(args)
-    if (!params.has("lineitem") && !params.has("customer") &&
+    if (!params.has("lineItem") && !params.has("customer") &&
       !params.has("orders") && !params.has("nation")) {
       println("  This program expects data from the TPC-H benchmark as input data.")
       println("  Due to legal restrictions, we can not ship generated data.")
       println("  You can find the TPC-H data generator at http://www.tpc.org/tpch/.")
       println("  Usage: TPCHQuery10" +
-        "--customer <path> --orders <path> --lineitem <path> --nation <path> --output <path>")
+        "--customer <path> --orders <path> --lineItem <path> --nation <path> --output <path>")
       return
     }
 
@@ -98,25 +98,25 @@ object TPCHQuery10 {
     // make parameters available in the web interface
     env.getConfig.setGlobalJobParameters(params)
 
-    // get customer data set: (custkey, name, address, nationkey, acctbal) 
+    // get customer data set: (custkey, name, address, nationkey, acctbal)
     val customers = getCustomerDataSet(env, params.get("customer"))
     // get orders data set: (orderkey, custkey, orderdate)
     val orders = getOrdersDataSet(env, params.get("orders"))
-    // get lineitem data set: (orderkey, extendedprice, discount, returnflag)
-    val lineitems = getLineitemDataSet(env, params.get("lineitem"))
-    // get nation data set: (nationkey, name)    
+    // get lineItem data set: (orderkey, extendedprice, discount, returnflag)
+    val lineItems = getlineItemDataSet(env, params.get("lineItem"))
+    // get nation data set: (nationkey, name)
     val nations = getNationDataSet(env, params.get("nation"))
 
     // filter orders by years
     val orders1990 = orders.filter(o => o._3.substring(0, 4).toInt > 1990)
       .map(o => (o._1, o._2))
 
-    // filter lineitems by return status
-    val lineitemsReturn = lineitems.filter(l => l._4.equals("R"))
+    // filter lineItems by return status
+    val lineItemsReturn = lineItems.filter(l => l._4.equals("R"))
       .map(l => (l._1, l._2 * (1 - l._3)))
 
     // compute revenue by customer
-    val revenueByCustomer = orders1990.joinWithHuge(lineitemsReturn).where(0).equalTo(0)
+    val revenueByCustomer = orders1990.joinWithHuge(lineItemsReturn).where(0).equalTo(0)
       .apply((o, l) => (o._2, l._2))
       .groupBy(0)
       .aggregate(Aggregations.SUM, 1)
@@ -131,7 +131,7 @@ object TPCHQuery10 {
       // emit result
       result.writeAsCsv(params.get("output"), "\n", "|")
       // execute program
-      env.execute("Scala TPCH Query 10 Example")
+      env.execute("Scala TPC-H Query 10 Example")
     } else {
       println("Printing result to stdout. Use --output to specify output path.")
       result.print()
@@ -159,10 +159,10 @@ object TPCHQuery10 {
       includedFields = Array(0, 1, 4))
   }
 
-  private def getLineitemDataSet(env: ExecutionEnvironment, lineitemPath: String):
+  private def getlineItemDataSet(env: ExecutionEnvironment, lineItemPath: String):
   DataSet[(Int, Double, Double, String)] = {
     env.readCsvFile[(Int, Double, Double, String)](
-      lineitemPath,
+      lineItemPath,
       fieldDelimiter = "|",
       includedFields = Array(0, 5, 6, 8))
   }

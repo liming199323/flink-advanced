@@ -18,7 +18,7 @@
 
 package io.gourd.flink.scala.batch.graph
 
-import io.gourd.flink.java.batch.graph.util.ConnectedComponentsData
+import io.gourd.flink.scala.batch.graph.util.ConnectedComponentsData
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.api.scala._
 import org.apache.flink.util.Collector
@@ -77,18 +77,15 @@ object ConnectedComponents {
 
     // read vertex and edge data
     // assign the initial components (equal to the vertex id)
-    val vertices =
-    getVertexDataSet(env, params).map { id => (id, id) }.withForwardedFields("*->_1;*->_2")
+    val vertices = getVertexDataSet(env, params).map { id => (id, id) }.withForwardedFields("*->_1;*->_2")
 
     // undirected edges by emitting for each input edge the input
     // edges itself and an inverted version
-    val edges =
-    getEdgeDataSet(env, params).flatMap { edge => Seq(edge, (edge._2, edge._1)) }
+    val edges = getEdgeDataSet(env, params).flatMap { edge => Seq(edge, (edge._2, edge._1)) }
 
     // open a delta iteration
     val verticesWithComponents = vertices.iterateDelta(vertices, maxIterations, Array("_1")) {
       (s, ws) =>
-
         // apply the step logic: join with the edges
         val allNeighbors = ws.join(edges).where(0).equalTo(0) { (vertex, edge) =>
           (edge._2, vertex._2)
@@ -127,20 +124,18 @@ object ConnectedComponents {
     else {
       println("Executing ConnectedComponents example with default vertices data set.")
       println("Use --vertices to specify file input.")
-      env.fromCollection(ConnectedComponentsData.VERTICES)
+      env.fromCollection(Array[Long](1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16))
     }
   }
 
-  private def getEdgeDataSet(env: ExecutionEnvironment, params: ParameterTool):
-  DataSet[(Long, Long)] = {
+  private def getEdgeDataSet(env: ExecutionEnvironment, params: ParameterTool): DataSet[(Long, Long)] = {
     if (params.has("edges")) {
       env.readCsvFile[(Long, Long)](
         params.get("edges"),
         fieldDelimiter = " ",
         includedFields = Array(0, 1))
         .map { x => (x._1, x._2) }
-    }
-    else {
+    } else {
       println("Executing ConnectedComponents example with default edges data set.")
       println("Use --edges to specify file input.")
       val edgeData = ConnectedComponentsData.EDGES map {

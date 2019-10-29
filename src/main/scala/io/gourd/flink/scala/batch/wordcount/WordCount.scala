@@ -18,11 +18,13 @@
 
 package io.gourd.flink.scala.batch.wordcount
 
-import io.gourd.flink.scala.batch.wordcount.util.WordCountData
+import io.gourd.flink.scala.data.Words
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.api.scala._
 
 /**
+  * 切分单词后对单词数量统计
+  *
   * Implements the "WordCount" program that computes a simple word occurrence histogram
   * over text files.
   *
@@ -34,7 +36,7 @@ import org.apache.flink.api.scala._
   * }}}
   *
   * If no parameters are provided, the program is run with default data from
-  * [[WordCountData]]
+  * [[Words]]
   *
   * This example shows how to:
   *
@@ -54,19 +56,17 @@ object WordCount {
 
     // make parameters available in the web interface
     env.getConfig.setGlobalJobParameters(params)
-    val text =
-      if (params.has("input")) {
-        env.readTextFile(params.get("input"))
-      } else {
-        println("Executing WordCount example with default input data set.")
-        println("Use --input to specify file input.")
-        env.fromCollection(WordCountData.WORDS)
-      }
+
+    // batch - DataSet type
+    val text: DataSet[String] = if (params.has("input")) env.readTextFile(params.get("input"))
+    else {
+      println("Executing WordCount example with default input data set.")
+      println("Use --input to specify file input.")
+      Words.dataSet(env)
+    }
 
     val counts = text.flatMap {
-      _.toLowerCase.split("\\W+") filter {
-        _.nonEmpty
-      }
+      _.split("\\W+").filter(_.nonEmpty)
     }
       .map {
         (_, 1)

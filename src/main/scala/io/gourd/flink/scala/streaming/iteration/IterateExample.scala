@@ -60,8 +60,8 @@ object IterateExample {
         // map a list of strings to integer pairs
         env.readTextFile(params.get("input")).map { value: String =>
           val record = value.substring(1, value.length - 1)
-          val splitted = record.split(",")
-          (Integer.parseInt(splitted(0)), Integer.parseInt(splitted(1)))
+          val splitTed = record.split(",")
+          (Integer.parseInt(splitTed(0)), Integer.parseInt(splitTed(1)))
         }
       } else {
         println("Executing Iterate example with default input data set.")

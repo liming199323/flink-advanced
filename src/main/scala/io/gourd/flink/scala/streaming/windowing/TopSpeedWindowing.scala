@@ -80,7 +80,7 @@ object TopSpeedWindowing {
 
           var isRunning: Boolean = true
 
-          override def run(ctx: SourceContext[CarEvent]) = {
+          override def run(ctx: SourceContext[CarEvent]): Unit = {
             while (isRunning) {
               Thread.sleep(100)
 
@@ -107,7 +107,7 @@ object TopSpeedWindowing {
       .evictor(TimeEvictor.of(Time.of(evictionSec * 1000, TimeUnit.MILLISECONDS)))
       .trigger(DeltaTrigger.of(triggerMeters, new DeltaFunction[CarEvent] {
         def getDelta(oldSp: CarEvent, newSp: CarEvent): Double = newSp.distance - oldSp.distance
-      }, cars.getType().createSerializer(env.getConfig)))
+      }, cars.dataType.createSerializer(env.getConfig)))
       //      .window(Time.of(evictionSec * 1000, (car : CarEvent) => car.time))
       //      .every(Delta.of[CarEvent](triggerMeters,
       //          (oldSp,newSp) => newSp.distance-oldSp.distance, CarEvent(0,0,0,0)))
@@ -127,6 +127,11 @@ object TopSpeedWindowing {
   // *************************************************************************
   // USER FUNCTIONS
   // *************************************************************************
+
+  //  val parseMap = (line: String) => (Int, Int, Double, Long) = {
+  //    val record = line.substring(1, line.length - 1).split(",")
+  //    (record(0).toInt, record(1).toInt, record(2).toDouble, record(3).toLong)
+  //  }
 
   def parseMap(line: String): (Int, Int, Double, Long) = {
     val record = line.substring(1, line.length - 1).split(",")

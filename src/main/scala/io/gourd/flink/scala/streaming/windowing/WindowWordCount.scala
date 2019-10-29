@@ -18,7 +18,7 @@
 
 package io.gourd.flink.scala.streaming.windowing
 
-import io.gourd.flink.scala.batch.wordcount.util.WordCountData
+import io.gourd.flink.scala.data.Words
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.api.scala._
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
@@ -38,7 +38,7 @@ import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironm
   * }}}
   *
   * If no parameters are provided, the program is run with default data from
-  * [[WordCountData]].
+  * [[Words]].
   *
   * This example shows how to:
   *
@@ -54,18 +54,15 @@ object WindowWordCount {
     val params = ParameterTool.fromArgs(args)
 
     // set up the execution environment
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
 
     // get input data
     val text =
-      if (params.has("input")) {
-        // read the text file from given input path
-        env.readTextFile(params.get("input"))
-      } else {
+      if (params.has("input")) env.readTextFile(params.get("input"))
+      else {
         println("Executing WindowWordCount example with default input data set.")
         println("Use --input to specify file input.")
-        // get default test text data
-        env.fromElements(WordCountData.WORDS: _*)
+        Words.dataStream(env)
       }
 
     // make parameters available in the web interface
@@ -76,7 +73,7 @@ object WindowWordCount {
 
     val counts: DataStream[(String, Int)] = text
       // split up the lines in pairs (2-tuple) containing: (word,1)
-      .flatMap(_.toLowerCase.split("\\W+"))
+      .flatMap(_.toLowerCase(java.util.Locale.getDefault).split("\\W+"))
       .filter(_.nonEmpty)
       .map((_, 1))
       .keyBy(0)
@@ -86,9 +83,8 @@ object WindowWordCount {
       .sum(1)
 
     // emit result
-    if (params.has("output")) {
-      counts.writeAsText(params.get("output"))
-    } else {
+    if (params.has("output")) counts.writeAsText(params.get("output"))
+    else {
       println("Printing result to stdout. Use --output to specify output path.")
       counts.print()
     }

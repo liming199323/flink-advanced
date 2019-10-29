@@ -41,7 +41,7 @@ object WordCountSQL {
     val env = ExecutionEnvironment.getExecutionEnvironment
     val tEnv: BatchTableEnvironment = BatchTableEnvironment.create(env)
 
-    val input = env.fromElements(WC("hello", 1), WC("hello", 1), WC("ciao", 1))
+    val input: DataSet[WC] = env.fromElements(WC("hello", 1), WC("hello", 1), WC("ciao", 1))
 
     // register the DataSet as table "WordCount"
     tEnv.registerDataSet("WordCount", input, 'word, 'frequency)

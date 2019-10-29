@@ -18,7 +18,7 @@
 
 package io.gourd.flink.scala.batch.graph
 
-import io.gourd.flink.java.batch.graph.util.EnumTrianglesData
+import io.gourd.flink.scala.batch.graph.util.EnumTrianglesData
 import org.apache.flink.api.common.functions.GroupReduceFunction
 import org.apache.flink.api.common.operators.Order
 import org.apache.flink.api.java.functions.FunctionAnnotation.ForwardedFields

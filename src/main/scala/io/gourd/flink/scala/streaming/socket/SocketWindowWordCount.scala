@@ -29,7 +29,8 @@ import org.apache.flink.streaming.api.windowing.time.Time
   * The easiest way to try this out is to open a text sever (at port 12345)
   * using the ''netcat'' tool via
   * {{{
-  * nc -l 12345 on Linux or nc -l -p 12345 on Windows
+  * nc -l 12345 on Linux
+  * nc -l -p 12345 on Windows
   * }}}
   * and run this example with the hostname and the port as arguments..
   */
@@ -45,9 +46,9 @@ object SocketWindowWordCount {
     try {
       val params = ParameterTool.fromArgs(args)
       hostname = if (params.has("hostname")) params.get("hostname") else "localhost"
-      port = params.getInt("port")
+      port = params.getInt("port", 12345)
     } catch {
-      case e: Exception =>
+      case _: Exception =>
         System.err.println("No port specified. Please run 'SocketWindowWordCount " +
           "--hostname <hostname> --port <port>', where hostname (localhost by default) and port " +
           "is the address of the text server")
@@ -65,7 +66,7 @@ object SocketWindowWordCount {
     // parse the data, group it, window it, and aggregate the counts
     val windowCounts = text
       .flatMap { w => w.split("\\s") }
-      .map { w => WordWithCount(w, 1) }
+      .map(WordWithCount(_, 1))
       .keyBy("word")
       .timeWindow(Time.seconds(5))
       .sum("count")
@@ -76,7 +77,7 @@ object SocketWindowWordCount {
     env.execute("Socket Window WordCount")
   }
 
-  /** Data type for words with count */
-  case class WordWithCount(word: String, count: Long)
-
 }
+
+/** Data type for words with count */
+case class WordWithCount(word: String, count: Long)

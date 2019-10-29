@@ -18,7 +18,7 @@
 
 package io.gourd.flink.scala.batch.graph
 
-import io.gourd.flink.java.batch.graph.util.ConnectedComponentsData
+import io.gourd.flink.scala.batch.graph.util.ConnectedComponentsData
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.api.scala._
 import org.apache.flink.util.Collector

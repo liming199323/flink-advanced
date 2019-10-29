@@ -18,7 +18,7 @@
 
 package io.gourd.flink.scala.streaming.wordcount
 
-import io.gourd.flink.scala.batch.wordcount.util.WordCountData
+import io.gourd.flink.scala.data.Words
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.streaming.api.scala._
 
@@ -34,7 +34,7 @@ import org.apache.flink.streaming.api.scala._
   * }}}
   *
   * If no parameters are provided, the program is run with default data from
-  * {@link WordCountData}.
+  * [[Words]]
   *
   * This example shows how to:
   *
@@ -57,20 +57,17 @@ object WordCount {
     env.getConfig.setGlobalJobParameters(params)
 
     // get input data
-    val text =
-    // read the text file from given input path
-      if (params.has("input")) {
-        env.readTextFile(params.get("input"))
-      } else {
-        println("Executing WordCount example with default inputs data set.")
-        println("Use --input to specify file input.")
-        // get default test text data
-        env.fromElements(WordCountData.WORDS: _*)
-      }
+    val text = if (params.has("input")) env.readTextFile(params.get("input"))
+    else {
+      println("Executing WordCount example with default inputs data set.")
+      println("Use --input to specify file input.")
+      // get default test text data
+      Words.dataStream(env)
+    }
 
     val counts: DataStream[(String, Int)] = text
       // split up the lines in pairs (2-tuples) containing: (word,1)
-      .flatMap(_.toLowerCase.split("\\W+"))
+      .flatMap(_.split("\\W+"))
       .filter(_.nonEmpty)
       .map((_, 1))
       // group by the tuple field "0" and sum up tuple field "1"
@@ -78,9 +75,8 @@ object WordCount {
       .sum(1)
 
     // emit result
-    if (params.has("output")) {
-      counts.writeAsText(params.get("output"))
-    } else {
+    if (params.has("output")) counts.writeAsText(params.get("output"))
+    else {
       println("Printing result to stdout. Use --output to specify output path.")
       counts.print()
     }
