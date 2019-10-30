@@ -9,13 +9,15 @@
 >user 表示用户，role 表示角色。一个用户拥有多个角色。
 
 **表说明**
+所有表默认包含字段`platform,channel,region,server,dataUnix`
 
 |表名|描述|字段|
 |---|---|---|
-|role-login|角色登录|platform,channel,region,server,uid,rid,data_unix,status|
-|role-order|角色充值|platform,channel,region,server,uid,rid,data_unix,payWay,orderId,valid,money|
-|role-shop|角色商城消费|platform,channel,region,server,uid,rid,data_unix,mallId,itemId,currencyType,num,singleMoney,totalMoney|
-|user-login|用户登录|platform,channel,region,server,uid,data_unix,status|
+|user-login|用户登录|uid,status|
+|role-login|角色登录|uid,rid,status|
+|role-order|角色充值|uid,rid,payWay,orderId,valid,money|
+|role-shop|角色商城消费|uid,rid,mallId,itemId,currencyType,num,singleMoney,totalMoney|
+
 
 **字段说明**
 
