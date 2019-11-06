@@ -1,8 +1,8 @@
 package io.gourd.flink.scala.games.batch
 
-import io.gourd.flink.scala.MainApp
-import io.gourd.flink.scala.games.Games.dataSetFromUserLogin
-import org.apache.flink.api.scala.{ExecutionEnvironment, _}
+import io.gourd.flink.scala.BatchLocalApp
+import io.gourd.flink.scala.games.data.GameData
+import org.apache.flink.api.scala._
 
 /**
   * 函数扩展，支持偏函数应用
@@ -10,11 +10,10 @@ import org.apache.flink.api.scala.{ExecutionEnvironment, _}
   *
   * @author Li.Wei by 2019/11/4
   */
-object DataSetExtensions extends MainApp {
-  val env = ExecutionEnvironment.getExecutionEnvironment
+object DataSetExtensions extends BatchLocalApp {
 
   // 用户登录数据 DataSet
-  val userLoginDataSet = dataSetFromUserLogin(env)
+  val userLoginDataSet = GameData.loadUserLoginDs(this)
 
   import org.apache.flink.api.scala.extensions._ // 引入 API 以支持 funWith
 

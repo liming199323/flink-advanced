@@ -1,9 +1,10 @@
 package io.gourd.flink.scala.games.batch
 
-import io.gourd.flink.scala.MainApp
-import io.gourd.flink.scala.games.Games.{UserLogin, dataSetFromRoleLogin, dataSetFromUserLogin}
+import io.gourd.flink.scala.BatchLocalApp
+import io.gourd.flink.scala.games.data.GameData
+import io.gourd.flink.scala.games.data.pojo.UserLogin
 import org.apache.flink.api.common.functions.RichMapFunction
-import org.apache.flink.api.scala.{ExecutionEnvironment, _}
+import org.apache.flink.api.scala._
 import org.apache.flink.configuration.Configuration
 
 /** 广播变量
@@ -11,16 +12,15 @@ import org.apache.flink.configuration.Configuration
   *
   * @author Li.Wei by 2019/11/4
   */
-object Broadcast extends MainApp {
-  val env = ExecutionEnvironment.getExecutionEnvironment
+object Broadcast extends BatchLocalApp {
 
   // 用户登录数据 DataSet
-  val userLoginDataSet = dataSetFromUserLogin(env)
+  val userLoginDs = GameData.loadUserLoginDs(this)
 
   // 角色登录数据 DataSet 对应用户ID,去重
-  val roleLoginDataSet = dataSetFromRoleLogin(env).map(_.uid).distinct()
+  val roleLoginDs = GameData.loadRoleLoginDs(this).map(_.uid).distinct()
 
-  userLoginDataSet
+  userLoginDs
     .map(new RichMapFunction[UserLogin, (String, String)] {
       var broadcastSet: Traversable[String] = _
 
@@ -34,7 +34,7 @@ object Broadcast extends MainApp {
       override def map(value: UserLogin): (String, String) =
         if (broadcastSet.exists(_ == value.uid)) (value.uid, value.status) else ("none", value.status)
 
-    }).withBroadcastSet(roleLoginDataSet, "roleLoginDataSet")
+    }).withBroadcastSet(roleLoginDs, "roleLoginDataSet")
     .first(10)
     .print()
 

@@ -8,11 +8,12 @@
 ## 文档
 |目录|内容|
 |---|---|
-|[Apache-Flink-零基础入门](./flink-notes/Apache-Flink-零基础入门)           |Apache-Flink-零基础入门系列|
+|[flink-notes](./flink-notes/)           |Apache-Flink-学习笔记|
 ## 任务开发实例
 |包|说明|
 |---|---|
 |[official_example](./src/main/scala/io/gourd/flink/scala/official_example)|官方示例|
+|[api](./src/main/scala/io/gourd/flink/scala/api)                       |定义接口规范，提供快速开发APP模板|
 |[data](./src/main/scala/io/gourd/flink/scala/data)                     |示例所需数据集封装，[说明](./src/main/resources/data/README.MD)|
 |[kafka](./src/main/scala/io/gourd/flink/scala/kafka)                   |kafka API|
 |[es](./src/main/scala/io/gourd/flink/scala/es)                         |elasticsearch API|

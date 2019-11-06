@@ -1,8 +1,10 @@
 package io.gourd.flink.scala.games.streaming
 
-import io.gourd.flink.scala.games.Games._
-import io.gourd.flink.scala.{GameAscendingTimestampExtractor, GameSourceFunction, MainApp}
-import org.apache.flink.api.scala.{ExecutionEnvironment, _}
+import io.gourd.flink.scala.BatchLocalApp
+import io.gourd.flink.scala.api.MainApp
+import io.gourd.flink.scala.games.data.pojo.{RoleLogin, UserLogin}
+import io.gourd.flink.scala.games.data.{GameAscendingTimestampExtractor, GameData, GameSourceFunction}
+import org.apache.flink.api.scala._
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows
@@ -27,13 +29,14 @@ trait Streaming extends MainApp {
   // 处理时指定时间属性
   // val table = tEnv.fromDataStream(stream, 'UserActionTimestamp, 'Username, 'Data, 'UserActionTime.proctime)
 
-  val evn = ExecutionEnvironment.getExecutionEnvironment
+  val evn = new BatchLocalApp() {} // load
+
   val userLoginDataStream: DataStream[UserLogin] = sEnv
-    .addSource(new GameSourceFunction(dataSetFromUserLogin(evn), millis = 0))
+    .addSource(new GameSourceFunction(GameData.loadUserLoginDs(evn), millis = 0))
     .assignTimestampsAndWatermarks(new GameAscendingTimestampExtractor[UserLogin]())
 
   val roleLoginDataStream = sEnv
-    .addSource(new GameSourceFunction(dataSetFromRoleLogin(evn), millis = 0))
+    .addSource(new GameSourceFunction(GameData.loadRoleLoginDs(evn), millis = 0))
     .assignTimestampsAndWatermarks(new GameAscendingTimestampExtractor[RoleLogin]())
 
 }
@@ -74,7 +77,6 @@ object StreamingTable extends Streaming {
 object StreamingSQL extends Streaming {
 
   val tEnv = StreamTableEnvironment.create(sEnv)
-  tEnv.connect()
   tEnv.registerDataStream("userLoginTable", userLoginDataStream)
   tEnv.registerDataStream("roleLoginTable", roleLoginDataStream)
 

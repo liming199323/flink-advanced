@@ -5,7 +5,9 @@ import org.apache.flink.streaming.api.scala._
 
 import scala.io.Source
 
-/**
+/** 数据集
+  * 内容参考 data/words/words.txt
+  *
   * @author Li.Wei by 2019/10/29
   */
 object Words {

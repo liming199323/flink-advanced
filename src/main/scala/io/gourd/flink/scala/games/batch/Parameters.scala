@@ -1,6 +1,6 @@
 package io.gourd.flink.scala.games.batch
 
-import io.gourd.flink.scala.MainApp
+import io.gourd.flink.scala.api.MainApp
 import org.apache.flink.api.common.functions.RichFilterFunction
 import org.apache.flink.api.scala.{ExecutionEnvironment, _}
 import org.apache.flink.configuration.Configuration

@@ -1,11 +1,11 @@
 package io.gourd.flink.scala.games.batch
 
-import io.gourd.flink.scala.MainApp
-import io.gourd.flink.scala.games.Games._
+import io.gourd.flink.scala.games.data.GameData
+import io.gourd.flink.scala.{BatchLocalApp, BatchTableLocalApp}
 import org.apache.flink.api.common.operators.Order
 import org.apache.flink.api.common.operators.base.JoinOperatorBase.JoinHint
-import org.apache.flink.api.scala.{ExecutionEnvironment, _}
-import org.apache.flink.table.api.scala.{BatchTableEnvironment, _}
+import org.apache.flink.api.scala._
+import org.apache.flink.table.api.scala._
 
 /** Batch 任务 API 使用示例
   * [[BatchDataSet]]
@@ -14,18 +14,14 @@ import org.apache.flink.table.api.scala.{BatchTableEnvironment, _}
   *
   * @author Li.Wei by 2019/10/30
   */
-trait Batch extends MainApp {
+trait Batch
 
-  val env = ExecutionEnvironment.getExecutionEnvironment
+object BatchDataSet extends BatchLocalApp {
 
   // 用户登录数据 DataSet
-  val userLoginDataSet = dataSetFromUserLogin(env)
+  val userLoginDataSet = GameData.loadUserLoginDs(this)
   // 角色登录数据 DataSet
-  val roleLoginDataSet = dataSetFromRoleLogin(env)
-
-}
-
-object BatchDataSet extends Batch {
+  val roleLoginDataSet = GameData.loadRoleLoginDs(this)
 
   userLoginDataSet
     .filter(_.dataUnix > 1571414499)
@@ -38,17 +34,15 @@ object BatchDataSet extends Batch {
     .print()
 }
 
-object BatchTable extends Batch {
-  val tEnv = BatchTableEnvironment.create(env)
-  // 用户登录数据 Table
-  val userLoginTable = tEnv.fromDataSet[UserLogin](userLoginDataSet)
-  // 角色登录数据 Table
-  val roleLoginTable = tEnv.fromDataSet[RoleLogin](roleLoginDataSet)
+object BatchTable extends BatchTableLocalApp {
 
-  userLoginTable
+  private val userLogin = GameData.registerUserLoginDs(this)
+  private val roleLogin = GameData.registerRoleLoginDs(this)
+
+  tEnv.scan(userLogin)
     .select("platform,dataUnix,uid,status")
     .where('dataUnix > 1571414499 && 'status === "LOGIN")
-    .join(roleLoginTable.select("uid as r_uid"), "uid = r_uid")
+    .join(tEnv.scan(roleLogin).select("uid as r_uid"), "uid = r_uid")
     .groupBy("platform")
     .select("platform as p , count(platform) as c")
     .orderBy('c.asc)
@@ -56,24 +50,19 @@ object BatchTable extends Batch {
     .print()
 }
 
-object BatchSQL extends Batch {
-  val tEnv = BatchTableEnvironment.create(env)
-  // 用户登录数据 Table
-  val userLoginTable = tEnv.fromDataSet[UserLogin](userLoginDataSet)
-  // 角色登录数据 Table
-  val roleLoginTable = tEnv.fromDataSet[RoleLogin](roleLoginDataSet)
+object BatchSQL extends BatchTableLocalApp {
 
-  tEnv.registerDataSet("userLoginTable", userLoginTable)
-  tEnv.registerDataSet("roleLoginTable", roleLoginTable)
+  private val table = GameData.registerUserLoginDs(this)
+
   tEnv.sqlQuery(
-    """
-      |SELECT platform AS p,COUNT(platform) AS c FROM
-      |(
-      |SELECT platform,dataUnix,uid,status FROM userLoginTable
-      |WHERE dataUnix > 0 AND status = 'LOGIN'
-      |)
-      |GROUP BY platform
-      |""".stripMargin)
+    s"""
+       |SELECT platform AS p,COUNT(platform) AS c FROM
+       |(
+       |SELECT platform,dataUnix,uid,status FROM $table
+       |WHERE dataUnix > 0 AND status = 'LOGIN'
+       |)
+       |GROUP BY platform
+       |""".stripMargin)
     .toDataSet[(String, Long)]
     .print()
 }
