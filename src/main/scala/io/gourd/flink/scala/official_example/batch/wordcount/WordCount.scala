@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package io.gourd.flink.scala.batch.wordcount
+package io.gourd.flink.scala.official_example.batch.wordcount
 
 import io.gourd.flink.scala.data.Words
 import org.apache.flink.api.java.utils.ParameterTool

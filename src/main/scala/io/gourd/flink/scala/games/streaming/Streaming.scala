@@ -24,6 +24,9 @@ trait Streaming extends MainApp {
   // env.setStreamTimeCharacteristic(TimeCharacteristic.IngestionTime)
   // env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
+  // 处理时指定时间属性
+  // val table = tEnv.fromDataStream(stream, 'UserActionTimestamp, 'Username, 'Data, 'UserActionTime.proctime)
+
   val evn = ExecutionEnvironment.getExecutionEnvironment
   val userLoginDataStream: DataStream[UserLogin] = sEnv
     .addSource(new GameSourceFunction(dataSetFromUserLogin(evn), millis = 0))
@@ -52,7 +55,8 @@ object StreamingDataStream extends Streaming {
 object StreamingTable extends Streaming {
 
   val tEnv = StreamTableEnvironment.create(sEnv)
-  val userLoginTable = tEnv.fromDataStream(userLoginDataStream)
+  // val userLoginTable = tEnv.fromDataStream(userLoginDataStream)
+  val userLoginTable = tEnv.fromDataStream(userLoginDataStream, 'status, 'platform, 'uid, 'dataUnix.proctime)
   val roleLoginTable = tEnv.fromDataStream(roleLoginDataStream)
 
   userLoginTable
@@ -70,7 +74,7 @@ object StreamingTable extends Streaming {
 object StreamingSQL extends Streaming {
 
   val tEnv = StreamTableEnvironment.create(sEnv)
-
+  tEnv.connect()
   tEnv.registerDataStream("userLoginTable", userLoginDataStream)
   tEnv.registerDataStream("roleLoginTable", roleLoginDataStream)
 

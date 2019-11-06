@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package io.gourd.flink.scala.batch.graph
+package io.gourd.flink.scala.official_example.batch.graph
 
 import org.apache.flink.api.scala._
 import org.apache.flink.util.Collector

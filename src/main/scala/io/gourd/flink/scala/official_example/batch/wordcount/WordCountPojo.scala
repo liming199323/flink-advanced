@@ -1,4 +1,4 @@
-package io.gourd.flink.scala.batch.wordcount
+package io.gourd.flink.scala.official_example.batch.wordcount
 
 import java.util.Locale
 

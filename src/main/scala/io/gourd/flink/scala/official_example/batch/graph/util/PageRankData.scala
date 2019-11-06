@@ -1,4 +1,4 @@
-package io.gourd.flink.scala.batch.graph.util
+package io.gourd.flink.scala.official_example.batch.graph.util
 
 import java.{lang, util}
 

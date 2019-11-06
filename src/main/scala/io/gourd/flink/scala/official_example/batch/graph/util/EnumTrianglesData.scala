@@ -1,4 +1,4 @@
-package io.gourd.flink.scala.batch.graph.util
+package io.gourd.flink.scala.official_example.batch.graph.util
 
 /**
   * @author Li.Wei by 2019/10/29

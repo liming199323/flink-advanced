@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gourd.flink.scala.batch.graph
+package io.gourd.flink.scala.official_example.batch.graph
 
 import java.lang.Iterable
 
-import io.gourd.flink.scala.batch.graph.util.PageRankData
+import io.gourd.flink.scala.official_example.batch.graph.util.PageRankData
 import org.apache.flink.api.common.functions.GroupReduceFunction
 import org.apache.flink.api.java.aggregation.Aggregations.SUM
 import org.apache.flink.api.java.utils.ParameterTool

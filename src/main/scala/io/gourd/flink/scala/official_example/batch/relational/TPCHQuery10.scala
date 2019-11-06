@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package io.gourd.flink.scala.batch.relational
+package io.gourd.flink.scala.official_example.batch.relational
 
 import org.apache.flink.api.java.aggregation.Aggregations
 import org.apache.flink.api.java.utils.ParameterTool
