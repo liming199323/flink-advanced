@@ -6,6 +6,7 @@ import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
   *
   * @author Li.Wei by 2019/11/7
   */
-trait StreamExecutionEnvironmentApp extends MainApp {
+trait StreamExecutionEnvironmentApp
+  extends MainApp {
   val sEnv: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
 }

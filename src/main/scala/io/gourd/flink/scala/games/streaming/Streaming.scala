@@ -57,13 +57,13 @@ object StreamingDataStream extends Streaming {
 
 object StreamingTable extends StreamTableEnvironmentApp {
 
-  private val userLoginTable = GameData.RegisterDataStream.userLogin(this)
-  private val roleLoginTable = GameData.RegisterDataStream.roleLogin(this)
+  private val userLoginTable = GameData.Table.userLogin(this)
+  private val roleLoginTable = GameData.Table.roleLogin(this)
 
-  stEnv.scan(userLoginTable)
+  userLoginTable
     .filter('dataUnix > 0)
     .filter('status === "LOGIN")
-    .join(stEnv.scan(roleLoginTable).select("uid as r_uid, rid")).where("uid = r_uid")
+    .join(roleLoginTable.select("uid as r_uid, rid")).where("uid = r_uid")
     .select("platform,rid")
     .toAppendStream[(String, String)]
     .print()
@@ -74,23 +74,23 @@ object StreamingTable extends StreamTableEnvironmentApp {
 
 object StreamingSQL extends StreamTableEnvironmentApp {
 
-  private val userLoginTable = GameData.RegisterDataStream.userLogin(this)
-  private val roleLoginTable = GameData.RegisterDataStream.roleLogin(this)
+  stEnv.registerTable("ul", GameData.Table.userLogin(this))
+  stEnv.registerTable("rl", GameData.Table.roleLogin(this))
 
   stEnv.sqlQuery(
     s"""
-      |SELECT u.* FROM
-      |(
-      |SELECT * FROM $userLoginTable
-      |WHERE dataUnix > 0 AND status = 'LOGIN'
-      |) u
-      |JOIN
-      |(SELECT uid as r_uid FROM $roleLoginTable) r
-      |ON(u.uid = r.r_uid)
-      |""".stripMargin)
+       |SELECT u.* FROM
+       |(
+       |SELECT * FROM ul
+       |WHERE dataUnix > 0 AND status = 'LOGIN'
+       |) u
+       |JOIN
+       |(SELECT uid as r_uid FROM rl) r
+       |ON(u.uid = r.r_uid)
+       |""".stripMargin)
     .toAppendStream[UserLogin]
     .print()
 
   stEnv.execute("StreamingSQL")
-  println(sEnv.getExecutionPlan) // 打印执行计划 https://flink.apache.org/visualizer/index.html
+  // println(sEnv.getExecutionPlan) // 打印执行计划 https://flink.apache.org/visualizer/index.html
 }

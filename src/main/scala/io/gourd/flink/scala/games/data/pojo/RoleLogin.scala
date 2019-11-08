@@ -14,6 +14,6 @@ case class RoleLogin(platform: String, server: String,
                      uid: String,
                      rid: String,
                      dataUnix: Int,
-                     status: String) extends GameModel{
+                     status: String) extends GameModel {
   override def getDataUnix: Int = dataUnix
 }

@@ -1,17 +1,16 @@
 package io.gourd.flink.scala.games.data
 
 import io.gourd.flink.scala.api._
-import io.gourd.flink.scala.games.data.pojo.{GameModel, RoleLogin, RolePay, RoleShop, UserLogin}
+import io.gourd.flink.scala.games.data.pojo._
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.java.io.TupleCsvInputFormat
 import org.apache.flink.api.java.typeutils.TupleTypeInfoBase
-import org.apache.flink.api.scala.typeutils.{CaseClassTypeInfo, Types}
 import org.apache.flink.api.scala.{DataSet, _}
 import org.apache.flink.core.fs.Path
 import org.apache.flink.streaming.api.scala.DataStream
 import org.apache.flink.table.api.Table
 import org.apache.flink.table.expressions.Expression
-import org.apache.flink.table.sources.TableSource
+import org.apache.flink.table.sources.CsvTableSource
 
 /** 使用 resource/data/game/ 作为数据源
   *
@@ -30,28 +29,24 @@ object GameData {
     def userLogin(app: BatchExecutionEnvironmentApp): DataSet[UserLogin] =
       app.bEnv.readCsvFile[UserLogin](
         userLoginCsvPath,
-        fieldDelimiter = ",",
         ignoreFirstLine = true
       )
 
     def roleLogin(app: BatchExecutionEnvironmentApp): DataSet[RoleLogin] =
       app.bEnv.readCsvFile[RoleLogin](
         roleLoginCsvPath,
-        fieldDelimiter = ",",
         ignoreFirstLine = true
       )
 
     def rolePay(app: BatchExecutionEnvironmentApp): DataSet[RolePay] =
       app.bEnv.readCsvFile[RolePay](
         rolePayCsvPath,
-        fieldDelimiter = ",",
         ignoreFirstLine = true
       )
 
     def roleShop(app: BatchExecutionEnvironmentApp): DataSet[RoleShop] =
       app.bEnv.readCsvFile[RoleShop](
         roleShopCsvPath,
-        fieldDelimiter = ",",
         ignoreFirstLine = true
       )
   }
@@ -133,39 +128,39 @@ object GameData {
 
 
   object Table {
-    def aa(app: TableEnvironmentApp, source: TableSource[_]): Table = app.tEnv.fromTableSource(source)
 
-    //    def userLogin(app: TableEnvironmentApp): Table = {
-    //      TypeInformation.of(UserLogin.getClass).asInstanceOf[CaseClassTypeInfo].typeParamTypeInfos
-    //      CsvTableSource.builder()
-    //        .ignoreFirstLine()
-    //        .path()
-    //        .field()
-    //          .build()
-    //      app.tEnv.fromTableSource(new CsvTableSource())
-    //    }
+    private def fromTableSource[T <: Product : TypeInformation](app: TableEnvironmentApp, path: String): Table = {
+      val builder: CsvTableSource.Builder = CsvTableSource.builder()
+        .ignoreFirstLine()
+        .path(path)
+      GameModel.fieldNameTypes[T]().foreach(k => builder.field(k._1, k._2))
+      app.tEnv.fromTableSource(builder.build())
+    }
 
+    def userLogin(app: TableEnvironmentApp): Table = fromTableSource[UserLogin](app, userLoginCsvPath)
+
+    def roleLogin(app: TableEnvironmentApp): Table = fromTableSource[RoleLogin](app, roleLoginCsvPath)
+
+    def rolePay(app: TableEnvironmentApp): Table = fromTableSource[RolePay](app, rolePayCsvPath)
+
+    def roleShop(app: TableEnvironmentApp): Table = fromTableSource[RoleShop](app, roleShopCsvPath)
   }
 
 }
 
 object TypeInformationUse {
   def main(args: Array[String]): Unit = {
-    val value = TypeInformation.of(classOf[UserLogin])
-    println(value.getGenericParameters)
+    val app = new StreamTableEnvironmentApp {}
+    val table: Table = GameData.Table.userLogin(app)
+    import org.apache.flink.table.api.scala._
 
-    val value1 = Types.of[UserLogin]
-    println(value1.getClass)
-    println(value1.getGenericParameters)
+    table.printSchema()
 
-    val value2 =
-      Types.CASE_CLASS[UserLogin].asInstanceOf[CaseClassTypeInfo[UserLogin]]
-    println(value2.getClass)
-    println(value2.getGenericParameters)
+    table
+      .distinct()
+      .toRetractStream[UserLogin]
+      .print()
 
-
-    val tuple = GameModel.fieldNameTypes[UserLogin]()
-    println(tuple)
-
+    app.stEnv.execute("--")
   }
 }

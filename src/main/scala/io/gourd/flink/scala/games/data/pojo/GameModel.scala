@@ -18,14 +18,13 @@ trait GameModel {
 
 object GameModel {
   /**
-    * 获取指定 CaseClass 字段类型
+    * 获取指定 CaseClass 字段类型 , 保证结果有序
     *
-    * @tparam T T
+    * @tparam T TypeInformation case class
     * @return 字段值、字段对应类型
     */
-  def fieldNameTypes[T <: Product : TypeInformation](): (Array[String], Array[TypeInformation[_]]) = {
+  def fieldNameTypes[T <: Product : TypeInformation](): List[(String, TypeInformation[_])] = {
     val ct = Types.CASE_CLASS[T].asInstanceOf[CaseClassTypeInfo[T]]
-    val fieldNames = ct.fieldNames
-    (fieldNames.toArray, fieldNames.map(ct.getTypeAt).toArray)
+    ct.fieldNames.map(f => f -> ct.getTypeAt(f)).toList
   }
 }

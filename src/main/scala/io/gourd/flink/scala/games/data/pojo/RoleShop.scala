@@ -16,6 +16,6 @@ case class RoleShop(platform: String, server: String,
                     uid: String,
                     rid: String,
                     dataUnix: Int,
-                    itemId: String, num: Long, totalMoney: Double) extends GameModel{
+                    itemId: String, num: Long, totalMoney: Double) extends GameModel {
   override def getDataUnix: Int = dataUnix
 }
