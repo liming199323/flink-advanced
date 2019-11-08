@@ -1,7 +1,7 @@
 package io.gourd.flink.scala.games.batch
 
-import io.gourd.flink.scala.games.data.GameData
-import io.gourd.flink.scala.{BatchLocalApp, BatchTableLocalApp}
+import io.gourd.flink.scala.api.{BatchExecutionEnvironmentApp, BatchTableEnvironmentApp}
+import io.gourd.flink.scala.games.data.GameData.{DataSet, RegisterDataSet}
 import org.apache.flink.api.common.operators.Order
 import org.apache.flink.api.common.operators.base.JoinOperatorBase.JoinHint
 import org.apache.flink.api.scala._
@@ -16,12 +16,12 @@ import org.apache.flink.table.api.scala._
   */
 trait Batch
 
-object BatchDataSet extends BatchLocalApp {
+object BatchDataSet extends BatchExecutionEnvironmentApp {
 
   // 用户登录数据 DataSet
-  val userLoginDataSet = GameData.loadUserLoginDs(this)
+  val userLoginDataSet = DataSet.userLogin(this)
   // 角色登录数据 DataSet
-  val roleLoginDataSet = GameData.loadRoleLoginDs(this)
+  val roleLoginDataSet = DataSet.roleLogin(this)
 
   userLoginDataSet
     .filter(_.dataUnix > 1571414499)
@@ -34,15 +34,15 @@ object BatchDataSet extends BatchLocalApp {
     .print()
 }
 
-object BatchTable extends BatchTableLocalApp {
+object BatchTable extends BatchTableEnvironmentApp {
 
-  private val userLogin = GameData.registerUserLoginDs(this)
-  private val roleLogin = GameData.registerRoleLoginDs(this)
+  private val userLogin = RegisterDataSet.userLogin(this)
+  private val roleLogin = RegisterDataSet.roleLogin(this)
 
-  tEnv.scan(userLogin)
+  btEnv.scan(userLogin)
     .select("platform,dataUnix,uid,status")
     .where('dataUnix > 1571414499 && 'status === "LOGIN")
-    .join(tEnv.scan(roleLogin).select("uid as r_uid"), "uid = r_uid")
+    .join(btEnv.scan(roleLogin).select("uid as r_uid"), "uid = r_uid")
     .groupBy("platform")
     .select("platform as p , count(platform) as c")
     .orderBy('c.asc)
@@ -50,11 +50,11 @@ object BatchTable extends BatchTableLocalApp {
     .print()
 }
 
-object BatchSQL extends BatchTableLocalApp {
+object BatchSQL extends BatchTableEnvironmentApp {
 
-  private val table = GameData.registerUserLoginDs(this)
+  private val table = RegisterDataSet.userLogin(this)
 
-  tEnv.sqlQuery(
+  btEnv.sqlQuery(
     s"""
        |SELECT platform AS p,COUNT(platform) AS c FROM
        |(

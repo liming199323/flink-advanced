@@ -9,5 +9,5 @@ import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExt
 // 自定义 eventTime
 // API :stream.assignTimestampsAndWatermarks
 class GameAscendingTimestampExtractor[T <: GameModel] extends AscendingTimestampExtractor[T] {
-  override def extractAscendingTimestamp(element: T): Long = element.dataUnix
+  override def extractAscendingTimestamp(element: T): Long = element.getDataUnix
 }

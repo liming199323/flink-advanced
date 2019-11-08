@@ -18,7 +18,7 @@
 
 package io.gourd.flink.scala.official_example.streaming.wordcount
 
-import io.gourd.flink.scala.data.Words
+import io.gourd.flink.scala.official_example.data.Words
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.streaming.api.scala._
 

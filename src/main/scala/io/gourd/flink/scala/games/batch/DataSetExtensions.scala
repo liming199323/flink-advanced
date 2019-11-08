@@ -1,7 +1,7 @@
 package io.gourd.flink.scala.games.batch
 
-import io.gourd.flink.scala.BatchLocalApp
-import io.gourd.flink.scala.games.data.GameData
+import io.gourd.flink.scala.api.BatchExecutionEnvironmentApp
+import io.gourd.flink.scala.games.data.GameData.DataSet
 import org.apache.flink.api.scala._
 
 /**
@@ -10,10 +10,10 @@ import org.apache.flink.api.scala._
   *
   * @author Li.Wei by 2019/11/4
   */
-object DataSetExtensions extends BatchLocalApp {
+object DataSetExtensions extends BatchExecutionEnvironmentApp {
 
   // 用户登录数据 DataSet
-  val userLoginDataSet = GameData.loadUserLoginDs(this)
+  val userLoginDataSet = DataSet.userLogin(this)
 
   import org.apache.flink.api.scala.extensions._ // 引入 API 以支持 funWith
 

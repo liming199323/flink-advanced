@@ -2,8 +2,8 @@ package io.gourd.flink.scala.games.batch
 
 import java.io.File
 
-import io.gourd.flink.scala.BatchLocalApp
-import io.gourd.flink.scala.games.data.GameData
+import io.gourd.flink.scala.api.BatchExecutionEnvironmentApp
+import io.gourd.flink.scala.games.data.GameData.DataSet
 import io.gourd.flink.scala.games.data.pojo.UserLogin
 import org.apache.flink.api.common.functions.RichMapFunction
 import org.apache.flink.api.scala._
@@ -27,13 +27,13 @@ import scala.io.BufferedSource
   *
   * @author Li.Wei by 2019/11/4
   */
-object DistributedCache extends BatchLocalApp {
+object DistributedCache extends BatchExecutionEnvironmentApp {
 
   private val path = getClass.getClassLoader.getResource("data/game/blacklist-uid.txt").getPath
-  env.registerCachedFile(path, "blacklist-uid", executable = false)
+  bEnv.registerCachedFile(path, "blacklist-uid", executable = false)
 
   // 用户登录数据 DataSet
-  val userLoginDataSet = GameData.loadUserLoginDs(this)
+  val userLoginDataSet = DataSet.userLogin(this)
 
   import org.apache.flink.api.scala.extensions._ // use filterWith
 

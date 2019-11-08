@@ -2,7 +2,7 @@ package io.gourd.flink.scala.official_example.batch.wordcount
 
 import java.util.Locale
 
-import io.gourd.flink.scala.data.Words
+import io.gourd.flink.scala.official_example.data.Words
 import org.apache.flink.api.common.functions.FlatMapFunction
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.api.scala.ExecutionEnvironment

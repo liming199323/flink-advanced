@@ -1,7 +1,7 @@
 package io.gourd.flink.scala.games.batch
 
-import io.gourd.flink.scala.BatchLocalApp
-import io.gourd.flink.scala.games.data.GameData
+import io.gourd.flink.scala.api.BatchExecutionEnvironmentApp
+import io.gourd.flink.scala.games.data.GameData.DataSet
 import io.gourd.flink.scala.games.data.pojo.UserLogin
 import org.apache.flink.api.common.functions.RichMapFunction
 import org.apache.flink.api.scala._
@@ -12,13 +12,13 @@ import org.apache.flink.configuration.Configuration
   *
   * @author Li.Wei by 2019/11/4
   */
-object Broadcast extends BatchLocalApp {
+object Broadcast extends BatchExecutionEnvironmentApp {
 
   // 用户登录数据 DataSet
-  val userLoginDs = GameData.loadUserLoginDs(this)
+  val userLoginDs = DataSet.userLogin(this)
 
   // 角色登录数据 DataSet 对应用户ID,去重
-  val roleLoginDs = GameData.loadRoleLoginDs(this).map(_.uid).distinct()
+  val roleLoginDs = DataSet.roleLogin(this).map(_.uid).distinct()
 
   userLoginDs
     .map(new RichMapFunction[UserLogin, (String, String)] {

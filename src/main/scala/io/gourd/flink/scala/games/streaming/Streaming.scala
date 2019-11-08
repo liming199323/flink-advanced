@@ -1,7 +1,7 @@
 package io.gourd.flink.scala.games.streaming
 
-import io.gourd.flink.scala.BatchLocalApp
-import io.gourd.flink.scala.api.MainApp
+import io.gourd.flink.scala.api.{BatchExecutionEnvironmentApp, MainApp, StreamTableEnvironmentApp}
+import io.gourd.flink.scala.games.data.GameData.DataSet
 import io.gourd.flink.scala.games.data.pojo.{RoleLogin, UserLogin}
 import io.gourd.flink.scala.games.data.{GameAscendingTimestampExtractor, GameData, GameSourceFunction}
 import org.apache.flink.api.scala._
@@ -9,7 +9,7 @@ import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows
 import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.table.api.scala.{StreamTableEnvironment, _}
+import org.apache.flink.table.api.scala._
 
 /** Streaming 任务 基础API 使用示例
   * [[StreamingDataStream]]
@@ -20,7 +20,7 @@ import org.apache.flink.table.api.scala.{StreamTableEnvironment, _}
   */
 trait Streaming extends MainApp {
 
-  val sEnv = StreamExecutionEnvironment.getExecutionEnvironment
+  val sEnv: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
   sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
   // alternatively:
   // env.setStreamTimeCharacteristic(TimeCharacteristic.IngestionTime)
@@ -29,21 +29,21 @@ trait Streaming extends MainApp {
   // 处理时指定时间属性
   // val table = tEnv.fromDataStream(stream, 'UserActionTimestamp, 'Username, 'Data, 'UserActionTime.proctime)
 
-  val evn = new BatchLocalApp() {} // load
+  val evn = new BatchExecutionEnvironmentApp() {} // load
 
   val userLoginDataStream: DataStream[UserLogin] = sEnv
-    .addSource(new GameSourceFunction(GameData.loadUserLoginDs(evn), millis = 0))
+    .addSource(new GameSourceFunction(DataSet.userLogin(evn), millis = 0))
     .assignTimestampsAndWatermarks(new GameAscendingTimestampExtractor[UserLogin]())
 
   val roleLoginDataStream = sEnv
-    .addSource(new GameSourceFunction(GameData.loadRoleLoginDs(evn), millis = 0))
+    .addSource(new GameSourceFunction(DataSet.roleLogin(evn), millis = 0))
     .assignTimestampsAndWatermarks(new GameAscendingTimestampExtractor[RoleLogin]())
 
 }
 
 object StreamingDataStream extends Streaming {
   userLoginDataStream
-    .filter(_.dataUnix > 0)
+    .filter(_.getDataUnix > 0)
     .filter(_.status == "LOGIN")
     .join(roleLoginDataStream).where(_.uid).equalTo(_.uid)
     .window(TumblingEventTimeWindows.of(Time.milliseconds(3000)))
@@ -55,17 +55,15 @@ object StreamingDataStream extends Streaming {
   // sEnv.execute("StreamingDataStream")
 }
 
-object StreamingTable extends Streaming {
+object StreamingTable extends StreamTableEnvironmentApp {
 
-  val tEnv = StreamTableEnvironment.create(sEnv)
-  // val userLoginTable = tEnv.fromDataStream(userLoginDataStream)
-  val userLoginTable = tEnv.fromDataStream(userLoginDataStream, 'status, 'platform, 'uid, 'dataUnix.proctime)
-  val roleLoginTable = tEnv.fromDataStream(roleLoginDataStream)
+  private val userLoginTable = GameData.RegisterDataStream.userLogin(this)
+  private val roleLoginTable = GameData.RegisterDataStream.roleLogin(this)
 
-  userLoginTable
+  stEnv.scan(userLoginTable)
     .filter('dataUnix > 0)
     .filter('status === "LOGIN")
-    .join(roleLoginTable.select("uid as r_uid, rid")).where("uid = r_uid")
+    .join(stEnv.scan(roleLoginTable).select("uid as r_uid, rid")).where("uid = r_uid")
     .select("platform,rid")
     .toAppendStream[(String, String)]
     .print()
@@ -74,26 +72,25 @@ object StreamingTable extends Streaming {
 
 }
 
-object StreamingSQL extends Streaming {
+object StreamingSQL extends StreamTableEnvironmentApp {
 
-  val tEnv = StreamTableEnvironment.create(sEnv)
-  tEnv.registerDataStream("userLoginTable", userLoginDataStream)
-  tEnv.registerDataStream("roleLoginTable", roleLoginDataStream)
+  private val userLoginTable = GameData.RegisterDataStream.userLogin(this)
+  private val roleLoginTable = GameData.RegisterDataStream.roleLogin(this)
 
-  tEnv.sqlQuery(
-    """
+  stEnv.sqlQuery(
+    s"""
       |SELECT u.* FROM
       |(
-      |SELECT * FROM userLoginTable
+      |SELECT * FROM $userLoginTable
       |WHERE dataUnix > 0 AND status = 'LOGIN'
       |) u
       |JOIN
-      |(SELECT uid as r_uid FROM roleLoginTable) r
+      |(SELECT uid as r_uid FROM $roleLoginTable) r
       |ON(u.uid = r.r_uid)
       |""".stripMargin)
     .toAppendStream[UserLogin]
     .print()
 
-  tEnv.execute("StreamingTable")
+  stEnv.execute("StreamingSQL")
   println(sEnv.getExecutionPlan) // 打印执行计划 https://flink.apache.org/visualizer/index.html
 }
