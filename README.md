@@ -14,7 +14,7 @@
 |---|---|
 |[official_example](./src/main/scala/io/gourd/flink/scala/official_example)|官方示例|
 |[api](./src/main/scala/io/gourd/flink/scala/api)                       |定义接口规范，提供快速开发APP模板|
-|[data](./src/main/scala/io/gourd/flink/scala/data)                     |示例所需数据集封装，[说明](./src/main/resources/data/README.MD)|
+|[data](./src/main/scala/io/gourd/flink/scala/data)                     |示例所需数据集封装，[Flink开发前准备与模拟数据集介绍](./flink-notes/3.0-Flink开发前准备与模拟数据集介绍.md)|
 |[kafka](./src/main/scala/io/gourd/flink/scala/kafka)                   |kafka API|
 |[es](./src/main/scala/io/gourd/flink/scala/es)                         |elasticsearch API|
 |[games](./src/main/scala/io/gourd/flink/scala/games)                   |模拟游戏业务API实战|

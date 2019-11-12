@@ -16,6 +16,7 @@ import org.apache.flink.table.api.scala._
   */
 trait Batch
 
+// 操作原始 DataSet API 完成 2个表数据过滤join聚合操作
 object BatchDataSet extends BatchExecutionEnvironmentApp {
 
   // 用户登录数据 DataSet
@@ -34,6 +35,7 @@ object BatchDataSet extends BatchExecutionEnvironmentApp {
     .print()
 }
 
+// 操作 Table API 完成 2个表数据过滤join聚合操作
 object BatchTable extends BatchTableEnvironmentApp {
 
   private val userLogin = RegisterDataSet.userLogin(this)
@@ -50,6 +52,7 @@ object BatchTable extends BatchTableEnvironmentApp {
     .print()
 }
 
+// 操作 SQL 完成 2个表数据过滤join聚合操作
 object BatchSQL extends BatchTableEnvironmentApp {
 
   private val table = RegisterDataSet.userLogin(this)

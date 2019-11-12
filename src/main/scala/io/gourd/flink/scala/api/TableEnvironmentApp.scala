@@ -8,7 +8,7 @@ import org.apache.flink.table.api.TableEnvironment
   *
   * @author Li.Wei by 2019/11/8
   */
-trait TableEnvironmentApp {
+trait TableEnvironmentApp extends MainApp {
 
   val tEnv: TableEnvironment
 }
