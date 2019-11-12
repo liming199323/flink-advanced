@@ -21,6 +21,7 @@ object DataSetExtensions extends BatchExecutionEnvironmentApp {
     .map(o => (o.platform, o.status))
     .mapWith {
       case (_, status) => status
-    }.print()
+    }
+    .print()
 
 }

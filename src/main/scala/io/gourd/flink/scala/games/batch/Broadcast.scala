@@ -21,21 +21,26 @@ object Broadcast extends BatchExecutionEnvironmentApp {
   val roleLoginDs = DataSet.roleLogin(this).map(_.uid).distinct()
 
   userLoginDs
-    .map(new RichMapFunction[UserLogin, (String, String)] {
-      var broadcastSet: Traversable[String] = _
-
-      override def open(config: Configuration): Unit = {
-        // 3. Access the broadcast DataSet as a Collection
-        import scala.collection.JavaConverters._
-        broadcastSet = getRuntimeContext.getBroadcastVariable[String]("roleLoginDataSet").asScala
-      }
-
-      // 判断当前用户对应的ID在该用户对应角色中是否登录过
-      override def map(value: UserLogin): (String, String) =
-        if (broadcastSet.exists(_ == value.uid)) (value.uid, value.status) else ("none", value.status)
-
-    }).withBroadcastSet(roleLoginDs, "roleLoginDataSet")
+    .map(new MyBroadcastMap())
+    .withBroadcastSet(roleLoginDs, "roleLoginDataSet")
     .first(10)
     .print()
+}
+
+/**
+  * 自定义 map 实现函数，RichMapFunction 中可获取flink上下文及执行前后的打开关闭操作
+  */
+class MyBroadcastMap extends RichMapFunction[UserLogin, (String, String)] {
+  var broadcastSet: Traversable[String] = _
+
+  override def open(config: Configuration): Unit = {
+    // 3. Access the broadcast DataSet as a Collection
+    import scala.collection.JavaConverters._
+    broadcastSet = getRuntimeContext.getBroadcastVariable[String]("roleLoginDataSet").asScala
+  }
+
+  // 判断当前用户对应的ID在该用户对应角色中是否登录过
+  override def map(value: UserLogin): (String, String) =
+    if (broadcastSet.exists(_ == value.uid)) (value.uid, value.status) else ("none", value.status)
 
 }

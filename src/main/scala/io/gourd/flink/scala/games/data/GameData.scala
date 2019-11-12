@@ -147,20 +147,3 @@ object GameData {
   }
 
 }
-
-object TypeInformationUse {
-  def main(args: Array[String]): Unit = {
-    val app = new StreamTableEnvironmentApp {}
-    val table: Table = GameData.Table.userLogin(app)
-    import org.apache.flink.table.api.scala._
-
-    table.printSchema()
-
-    table
-      .distinct()
-      .toRetractStream[UserLogin]
-      .print()
-
-    app.stEnv.execute("--")
-  }
-}
