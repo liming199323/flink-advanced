@@ -2,6 +2,7 @@ package io.gourd.flink.scala.games.batch.transformations
 
 import io.gourd.flink.scala.api.BatchExecutionEnvironmentApp
 import io.gourd.flink.scala.games.data.GameData.DataSet
+
 /**
   * @author Li.Wei by 2019/11/13
   */

@@ -1,6 +1,7 @@
 package io.gourd.flink.scala.games.batch.transformations
 
 import org.apache.flink.api.scala._
+
 /**
   * @author Li.Wei by 2019/11/13
   */

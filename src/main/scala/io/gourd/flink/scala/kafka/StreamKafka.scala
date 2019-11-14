@@ -16,7 +16,7 @@ object StreamKafka {
   def main(args: Array[String]): Unit = {
 
     // val env = StreamExecutionEnvironment.getExecutionEnvironment
-    val env = StreamExecutionEnvironment.createRemoteEnvironment("localhost", 8081)
+    val env = StreamExecutionEnvironment.createRemoteEnvironment("skuldcdhtest1.ktcs", 8081)
 
     val properties = new Properties
     properties.setProperty("bootstrap.servers", "skuldcdhtest1.ktcs:9092")
